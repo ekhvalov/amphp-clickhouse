@@ -10,6 +10,9 @@
   "autoload": {
     "psr-4": {
       "Ekhvalov\\AmphpClickHouse\\": "src"
-    }
+    },
+    "files": [
+      "src/functions.php"
+    ]
   }
 }
