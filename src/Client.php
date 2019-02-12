@@ -21,7 +21,7 @@ class Client
      * @param string $host
      * @param int $port
      */
-    public function __construct(string $host, int $port = 8123)
+    public function __construct(string $host = '127.0.0.1', int $port = 8123)
     {
         $this->host = $host;
         $this->port = $port;
