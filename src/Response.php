@@ -2,6 +2,7 @@
 
 namespace Ekhvalov\AmphpClickHouse;
 
+use Amp\ByteStream\Payload;
 use Amp\ByteStream\PendingReadError;
 use Amp\Coroutine;
 use Amp\Deferred;
@@ -37,6 +38,14 @@ class Response
     public function getHttpResponse(): \Amp\Artax\Response
     {
         return $this->response;
+    }
+
+    /**
+     * @return Payload
+     */
+    public function getPayload(): Payload
+    {
+        return new Payload($this->response->getBody());
     }
 
     /**
