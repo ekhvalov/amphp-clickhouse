@@ -34,7 +34,7 @@ class Response
     /**
      * @return \Amp\Artax\Response
      */
-    public function getResponse(): \Amp\Artax\Response
+    public function getHttpResponse(): \Amp\Artax\Response
     {
         return $this->response;
     }
