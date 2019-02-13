@@ -5,8 +5,11 @@ namespace Ekhvalov\AmphpClickHouse;
 use Amp\Artax\DefaultClient;
 use Amp\Artax\Request;
 use Amp\Artax\RequestBody;
+use Amp\ByteStream\InputStream;
 use function Amp\call;
+use Amp\Failure;
 use Amp\Promise;
+use Amp\Success;
 
 class Client
 {
@@ -40,16 +43,22 @@ class Client
         return $this;
     }
 
-    public function query(string $sql, RequestBody $body = null): Promise
+    public function query(string $sql, InputStream $stream = null): Promise
     {
-        return call(function () use ($sql, $body) {
+        return call(function () use ($sql, $stream) {
             $request = new Request($this->makeUrl($sql), 'POST');
 
-            if ($body) {
-                $request = $request->withBody($body);
+            if ($stream) {
+                $request = $request->withBody($this->getBody($stream));
             }
 
-            return new Response(yield $this->getHttpClient()->request($request));
+            /** @var \Amp\Artax\Response $httpResponse */
+            $httpResponse = yield $this->getHttpClient()->request($request);
+            if ($httpResponse->getStatus() >= 400) {
+                return new Failure(new \Exception(yield $httpResponse->getBody()));
+            }
+
+            return new Response($httpResponse);
         });
     }
 
@@ -74,5 +83,34 @@ class Client
             $this->port,
             http_build_query($data, '', '&', PHP_QUERY_RFC3986)
         );
+    }
+
+    private function getBody(InputStream $stream): RequestBody
+    {
+        return new class($stream) implements RequestBody {
+
+            /** @var InputStream */
+            private $stream;
+
+            public function __construct(InputStream $stream)
+            {
+                $this->stream = $stream;
+            }
+
+            public function getHeaders(): Promise
+            {
+                return new Success([]);
+            }
+
+            public function createBodyStream(): InputStream
+            {
+                return $this->stream;
+            }
+
+            public function getBodyLength(): Promise
+            {
+                return new Success(-1);
+            }
+        };
     }
 }
