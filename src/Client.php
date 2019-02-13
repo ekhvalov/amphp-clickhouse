@@ -12,6 +12,7 @@ class Client
 {
     private $host;
     private $port;
+    private $scheme = 'http';
     private $username;
     private $password;
     private $isCredentialsSet = false;
@@ -20,11 +21,15 @@ class Client
      * Client constructor.
      * @param string $host
      * @param int $port
+     * @param bool $useHttps
      */
-    public function __construct(string $host = '127.0.0.1', int $port = 8123)
+    public function __construct(string $host = '127.0.0.1', int $port = 8123, bool $useHttps = false)
     {
         $this->host = $host;
         $this->port = $port;
+        if ($useHttps) {
+            $this->scheme = 'https';
+        }
     }
 
     public function withCredentials(string $username, string $password): Client
@@ -63,7 +68,8 @@ class Client
             $data['password'] = $this->password;
         }
         return sprintf(
-            'http://%s:%d?%s', // TODO: Add scheme
+            '%s://%s:%d?%s',
+            $this->scheme,
             $this->host,
             $this->port,
             http_build_query($data, '', '&', PHP_QUERY_RFC3986)
