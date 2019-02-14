@@ -8,7 +8,7 @@ use function Amp\call;
 use Amp\Iterator;
 use Amp\Promise;
 
-class IteratorAsTsv implements InputStream
+class TsvDataStream implements InputStream
 {
     /** @var Iterator */
     private $iterator;
@@ -16,7 +16,7 @@ class IteratorAsTsv implements InputStream
     private $stringEscapeCharList;
 
     /**
-     * IteratorAsTsv constructor.
+     * TsvDataStream constructor.
      * @param \Traversable|array $iterator
      * @param bool $isMultiDimensional
      * @param string $stringEscapeCharList
