@@ -66,6 +66,7 @@ class Client
     {
         $client = new DefaultClient();
         $client->setOption(DefaultClient::OP_MAX_BODY_BYTES, 0); // TODO: Add 'setOptions' method
+        $client->setOption(DefaultClient::OP_TRANSFER_TIMEOUT, 0);
         return $client;
     }
 
