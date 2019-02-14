@@ -11,17 +11,17 @@ use Amp\Promise;
 class TsvDataStream implements InputStream
 {
     /** @var Iterator */
-    private $iterator;
+    private $rows;
     private $stringEscapeCharList;
 
     /**
      * TsvDataStream constructor.
-     * @param \Traversable|array $iterator
+     * @param array|\Traversable|Iterator $rows
      * @param string $stringEscapeCharList
      */
-    public function __construct($iterator, string $stringEscapeCharList = "\t\n\\")
+    public function __construct($rows, string $stringEscapeCharList = "\t\n\\")
     {
-        $this->iterator = Iterator\fromIterable($iterator);
+        $this->rows = ($rows instanceof Iterator) ? $rows : Iterator\fromIterable($rows);
         $this->stringEscapeCharList = $stringEscapeCharList;
     }
 
@@ -37,10 +37,10 @@ class TsvDataStream implements InputStream
     public function read(): Promise
     {
         return call(function () {
-            while (yield $this->iterator->advance()) {
+            while (yield $this->rows->advance()) {
                 return sprintf("%s\n", implode("\t", array_map(function ($value) {
                     return $this->convertValue($value);
-                }, $this->iterator->getCurrent())));
+                }, $this->rows->getCurrent())));
             }
             return null;
         });
