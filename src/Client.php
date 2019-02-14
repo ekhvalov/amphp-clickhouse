@@ -54,7 +54,7 @@ class Client
             $request = new Request($this->makeUrl($sql), 'POST');
 
             if ($data) {
-                $request = $request->withBody($this->getBody($data));
+                $request = $request->withBody($this->makeBody($data));
             }
 
             /** @var \Amp\Artax\Response $httpResponse */
@@ -91,7 +91,7 @@ class Client
         );
     }
 
-    private function getBody(InputStream $data): RequestBody
+    private function makeBody(InputStream $data): RequestBody
     {
         return new class($data) implements RequestBody {
 
