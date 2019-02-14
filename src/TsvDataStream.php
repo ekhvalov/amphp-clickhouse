@@ -13,6 +13,7 @@ class TsvDataStream implements InputStream
     /** @var Iterator */
     private $rows;
     private $stringEscapeCharList;
+    private $isJsonSupported;
 
     /**
      * TsvDataStream constructor.
@@ -23,6 +24,7 @@ class TsvDataStream implements InputStream
     {
         $this->rows = ($rows instanceof Iterator) ? $rows : Iterator\fromIterable($rows);
         $this->stringEscapeCharList = $stringEscapeCharList;
+        $this->isJsonSupported = extension_loaded('json');
     }
 
     /**
@@ -80,10 +82,12 @@ class TsvDataStream implements InputStream
         }, $values)));
     }
 
-    private function convertObject(\StdClass $value)
+    private function convertObject($value)
     {
         if (method_exists($value, '__toString')) {
             return $this->convertString($value);
+        } elseif ($this->isJsonSupported && ($value instanceof \JsonSerializable)) {
+            return $this->convertString(\json_encode($value));
         }
         throw new ConvertException(sprintf("Object of class '%s' could not be converted to string", get_class($value)));
     }

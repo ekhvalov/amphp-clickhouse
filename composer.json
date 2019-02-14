@@ -8,6 +8,9 @@
     "amphp/artax": "^3.0",
     "wp/csv": "dev-master"
   },
+  "suggest": {
+    "ext-json": "*"
+  },
   "autoload": {
     "psr-4": {
       "Ekhvalov\\AmphpClickHouse\\": "src"
