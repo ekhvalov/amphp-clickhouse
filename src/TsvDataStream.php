@@ -12,19 +12,16 @@ class TsvDataStream implements InputStream
 {
     /** @var Iterator */
     private $iterator;
-    private $isMultiDimensional;
     private $stringEscapeCharList;
 
     /**
      * TsvDataStream constructor.
      * @param \Traversable|array $iterator
-     * @param bool $isMultiDimensional
      * @param string $stringEscapeCharList
      */
-    public function __construct($iterator, bool $isMultiDimensional = false, string $stringEscapeCharList = "\t\n\\")
+    public function __construct($iterator, string $stringEscapeCharList = "\t\n\\")
     {
         $this->iterator = Iterator\fromIterable($iterator);
-        $this->isMultiDimensional = $isMultiDimensional;
         $this->stringEscapeCharList = $stringEscapeCharList;
     }
 
@@ -41,13 +38,9 @@ class TsvDataStream implements InputStream
     {
         return call(function () {
             while (yield $this->iterator->advance()) {
-                $data = $this->iterator->getCurrent();
-                if ($this->isMultiDimensional) {
-                    return sprintf("%s\n", implode("\t", array_map(function ($value) {
-                        return $this->convertValue($value);
-                    }, $data)));
-                }
-                return sprintf("%s\n", $this->convertValue($data));
+                return sprintf("%s\n", implode("\t", array_map(function ($value) {
+                    return $this->convertValue($value);
+                }, $this->iterator->getCurrent())));
             }
             return null;
         });
