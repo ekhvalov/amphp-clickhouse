@@ -67,6 +67,17 @@ class Client
         });
     }
 
+    /**
+     * @param string $table
+     * @param array|\Traversable $data
+     * @return Promise
+     * @throws ClientException
+     */
+    public function insert(string $table, $data): Promise
+    {
+        return $this->query(sprintf('INSERT INTO %s FORMAT TSV', $table), new TsvDataStream($data));
+    }
+
     private function getHttpClient(): \Amp\Artax\Client
     {
         $client = new DefaultClient();
