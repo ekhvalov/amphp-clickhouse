@@ -43,13 +43,13 @@ class Client
         return $this;
     }
 
-    public function query(string $sql, InputStream $stream = null): Promise
+    public function query(string $sql, InputStream $data = null): Promise
     {
-        return call(function () use ($sql, $stream) {
+        return call(function () use ($sql, $data) {
             $request = new Request($this->makeUrl($sql), 'POST');
 
-            if ($stream) {
-                $request = $request->withBody($this->getBody($stream));
+            if ($data) {
+                $request = $request->withBody($this->getBody($data));
             }
 
             /** @var \Amp\Artax\Response $httpResponse */
@@ -85,16 +85,16 @@ class Client
         );
     }
 
-    private function getBody(InputStream $stream): RequestBody
+    private function getBody(InputStream $data): RequestBody
     {
-        return new class($stream) implements RequestBody {
+        return new class($data) implements RequestBody {
 
             /** @var InputStream */
-            private $stream;
+            private $data;
 
-            public function __construct(InputStream $stream)
+            public function __construct(InputStream $data)
             {
-                $this->stream = $stream;
+                $this->data = $data;
             }
 
             public function getHeaders(): Promise
@@ -104,7 +104,7 @@ class Client
 
             public function createBodyStream(): InputStream
             {
-                return $this->stream;
+                return $this->data;
             }
 
             public function getBodyLength(): Promise
