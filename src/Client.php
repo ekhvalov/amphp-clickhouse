@@ -7,7 +7,6 @@ use Amp\Artax\Request;
 use Amp\Artax\RequestBody;
 use Amp\ByteStream\InputStream;
 use function Amp\call;
-use Amp\Failure;
 use Amp\Promise;
 use Amp\Success;
 
@@ -43,6 +42,12 @@ class Client
         return $this;
     }
 
+    /**
+     * @param string $sql
+     * @param InputStream|null $data
+     * @return Promise
+     * @throws ClientException
+     */
     public function query(string $sql, InputStream $data = null): Promise
     {
         return call(function () use ($sql, $data) {
@@ -55,7 +60,7 @@ class Client
             /** @var \Amp\Artax\Response $httpResponse */
             $httpResponse = yield $this->getHttpClient()->request($request);
             if ($httpResponse->getStatus() >= 400) {
-                return new Failure(new \Exception(yield $httpResponse->getBody()));
+                throw new ClientException(yield $httpResponse->getBody());
             }
 
             return new Response($httpResponse);
