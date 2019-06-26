@@ -2,7 +2,7 @@
 
 namespace Ekhvalov\AmphpClickHouse;
 
-use Amp\Artax\DefaultClient;
+use Amp\Artax\DefaultClient as HttpClient;
 use Amp\Artax\Request;
 use Amp\Artax\RequestBody;
 use Amp\ByteStream\InputStream;
@@ -18,6 +18,8 @@ class Client
     private $username;
     private $password;
     private $isCredentialsSet = false;
+    /** @var HttpClient */
+    private $httpClient;
 
     /**
      * Client constructor.
@@ -32,6 +34,9 @@ class Client
         if ($useHttps) {
             $this->scheme = 'https';
         }
+        $this->httpClient = new HttpClient();
+        $this->httpClient->setOption(HttpClient::OP_MAX_BODY_BYTES, 0); // TODO: Add 'setOptions' method
+        $this->httpClient->setOption(HttpClient::OP_TRANSFER_TIMEOUT, 0);
     }
 
     public function withCredentials(string $username, string $password): Client
@@ -58,7 +63,7 @@ class Client
             }
 
             /** @var \Amp\Artax\Response $httpResponse */
-            $httpResponse = yield $this->getHttpClient()->request($request);
+            $httpResponse = yield $this->httpClient->request($request);
             if ($httpResponse->getStatus() >= 400) {
                 throw new ClientException(yield $httpResponse->getBody());
             }
@@ -76,14 +81,6 @@ class Client
     public function insert(string $table, $data): Promise
     {
         return $this->query(sprintf('INSERT INTO %s FORMAT TSV', $table), new TsvDataStream($data));
-    }
-
-    private function getHttpClient(): \Amp\Artax\Client
-    {
-        $client = new DefaultClient();
-        $client->setOption(DefaultClient::OP_MAX_BODY_BYTES, 0); // TODO: Add 'setOptions' method
-        $client->setOption(DefaultClient::OP_TRANSFER_TIMEOUT, 0);
-        return $client;
     }
 
     private function makeUrl(string $sql): string
